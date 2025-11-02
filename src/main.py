@@ -1,8 +1,7 @@
 import sys
 from pathlib import Path
 from os_config import validate_paths
-from folder_utils import create_category_folders
-from folder_utils import organize_files_in_destination
+from folder_utils import create_category_folders, organize_files_in_destination
 
 def main():
     print(f"The name of the script is: {sys.argv[0]}")
@@ -26,7 +25,14 @@ def main():
         # 1. We "try" to run the function that might fail
         validate_paths(source_path, destination_path)
         #create_category_folders(destination_path)
-        organize_files_in_destination(source_path, destination_path)
+
+        if source_path.resolve() == destination_path.resolve():
+            print("\nSource and destination are the same. Organizing files in-place (moving).")
+            organize_files_in_destination(source_path, destination_path, same_place=True)
+        else:
+            print("\nSource and destination are different. Organizing files by copying.")
+            organize_files_in_destination(source_path, destination_path)
+        
         print("\n--- Success! All paths are valid. ---")
         
     except (FileNotFoundError, NotADirectoryError) as e:
