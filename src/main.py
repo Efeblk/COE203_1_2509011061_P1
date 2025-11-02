@@ -1,26 +1,39 @@
 import sys
-import os
-from os_config import organize_files, get_os_configuration
+from pathlib import Path
+from os_config import validate_paths
+from folder_utils import create_category_folders
+from folder_utils import organize_files_in_destination
 
 def main():
-    """Main function to run the file organizer."""
-    config = get_os_configuration()
+    print(f"The name of the script is: {sys.argv[0]}")
+    
+    arguments = sys.argv[1:]
+    
+    if len(arguments) < 2:
+        print("\nError: Please provide both a source and a destination directory.")
+        print(f"Usage: python {sys.argv[0]} <source_path> <destination_path>")
+        sys.exit(1) # Exit the script with an error code
 
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    source_directory_str = arguments[0]
+    destination_directory_str = arguments[1]
 
-    if len(sys.argv) == 3:
-        source_dir = sys.argv[1]
-        dest_dir = sys.argv[2]
-    elif len(sys.argv) == 1:
-        source_dir = os.path.join(project_root, "test_source")
-        dest_dir = os.path.join(project_root, "test_destination")
-    else:
-        print("Usage: python3 src/main.py [source_directory] [destination_directory]")
-        sys.exit(1)
+    # Convert to Path objects
+    source_path = Path(source_directory_str)
+    destination_path = Path(destination_directory_str)
 
-    print(f"Organizing files from '{source_dir}' to '{dest_dir}'")
-    organize_files(source_dir, dest_dir)
-    print("File organization complete.")
+    # This is the "try...except" block
+    try:
+        # 1. We "try" to run the function that might fail
+        validate_paths(source_path, destination_path)
+        #create_category_folders(destination_path)
+        organize_files_in_destination(source_path, destination_path)
+        print("\n--- Success! All paths are valid. ---")
+        
+    except (FileNotFoundError, NotADirectoryError) as e:
+        # 2. If it "catches" one of the errors we raised,
+        #    it will print the error message and stop.
+        print(f"\n{e}")
+        sys.exit(1) # Exit the script with an error code
 
 if __name__ == "__main__":
     main()

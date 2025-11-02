@@ -1,5 +1,10 @@
 from pathlib import Path
 
+def get_os_configuration():
+    """
+    Returns OS-specific configuration.
+    """
+    return {"os": "default"}
 
 def validate_paths(source_raw, dest_raw):
     """
