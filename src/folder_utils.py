@@ -1,7 +1,17 @@
-from categories import CATEGORIES
+import json
 from pathlib import Path
 import os
 import shutil
+
+def load_categories():
+    """Loads categories from config.json"""
+    # Assuming config.json is in the project root, which is one level above src
+    config_path = Path(__file__).parent.parent / "config.json"
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    return config["categories"]
+
+CATEGORIES = load_categories()
 
 def organize_files_in_destination(source_dir, dest_dir, same_place=False):
     """
@@ -39,3 +49,4 @@ def organize_files_in_destination(source_dir, dest_dir, same_place=False):
             else:
                 print(f"Copying {source_item} to {dest_folder}")
                 shutil.copy(str(source_item), str(dest_folder))
+
