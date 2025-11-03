@@ -1,12 +1,12 @@
 import sys
 from pathlib import Path
 from os_config import validate_paths
-from folder_utils import create_category_folders, organize_files_in_destination
+from folder_utils import organize_files_in_destination
 
-def main():
-    print(f"The name of the script is: {sys.argv[0]}")
+def main_cli(args):
+    print(f"The name of the script is: {args[0]}")
     
-    arguments = sys.argv[1:]
+    arguments = args[1:]
     
     if len(arguments) == 2:
         source_directory_str = arguments[0]
@@ -17,8 +17,9 @@ def main():
         destination_directory_str = "."
     else:
         print("\nError: Please provide a valid set of arguments.")
-        print(f"Usage: python {sys.argv[0]} <source_path> <destination_path>")
-        print(f"   or: python {sys.argv[0]} .")
+        print(f"Usage: python {args[0]} <source_path> <destination_path>")
+        print(f"   or: python {args[0]} .")
+        print(f"   or: python {args[0]} -ui")
         sys.exit(1)
 
     # Convert to Path objects
@@ -29,7 +30,6 @@ def main():
     try:
         # 1. We "try" to run the function that might fail
         validate_paths(source_path, destination_path)
-        create_category_folders(destination_path)
 
         if source_path.resolve() == destination_path.resolve():
             print("\nSource and destination are the same. Organizing files in-place (moving).")
@@ -45,6 +45,14 @@ def main():
         #    it will print the error message and stop.
         print(f"\n{e}")
         sys.exit(1) # Exit the script with an error code
+
+def main():
+    if "-ui" in sys.argv:
+        from gui import FileOrganizerApp
+        app = FileOrganizerApp()
+        app.mainloop()
+    else:
+        main_cli(sys.argv)
 
 if __name__ == "__main__":
     main()
