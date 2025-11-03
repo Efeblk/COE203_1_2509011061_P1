@@ -5,34 +5,41 @@ This Python script helps organize files in a specified directory into category-b
 ## Features
 
 - Organizes files by their extension into predefined categories (e.g., Images, Documents, Videos).
-- Creates new category directories if they don't exist.
 - Handles files with unknown extensions by placing them in an 'Others' directory.
+- Provides a statistical report after organization.
+- Supports both Command-Line Interface (CLI) and Graphical User Interface (GUI).
 
 ## Usage
 
-1.  **Place the script:** The main script is located at `src/main.py`.
+Run the program from the project's root directory.
 
-2.  **Modify the script (Optional):**
-    - Open `src/main.py`.
-    - In the `if __name__ == "__main__":` block, uncomment and set `source_directory` to the path of the folder you want to organize.
-    - Set `destination_directory` to the path where you want the organized files to be moved. This can be the same as the source directory or a different one.
+### Command-Line Interface (CLI)
 
-    ```python
-    if __name__ == "__main__":
-        source_directory = "/path/to/your/source/folder"
-        destination_directory = "/path/to/your/destination/folder"
-        organize_files(source_directory, destination_directory)
-    ```
-
-3.  **Run the script:** Execute the script from your terminal:
-
+1.  **Organize files from a source to a destination directory:**
     ```bash
-    python src/main.py
+    python3 src/main.py <source_path> <destination_path>
     ```
+    Example: `python3 src/main.py my_downloads organized_files`
+
+2.  **Organize files in the current directory (in-place):**
+    ```bash
+    python3 src/main.py .
+    ```
+
+### Graphical User Interface (GUI)
+
+To launch the GUI, use the `-ui` flag:
+```bash
+python3 src/main.py -ui
+```
+
+## Customization
+
+You can easily customize the file categories and their associated extensions by modifying the `config.json` file in the project's root directory.
 
 ## Categories
 
-The script currently supports the following categories:
+The script currently supports the following categories (defined in `config.json`):
 
 -   **Images:** `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`
 -   **Documents:** `.pdf`, `.doc`, `.docx`, `.txt`, `.rtf`, `.odt`
@@ -44,7 +51,3 @@ The script currently supports the following categories:
 -   **Code:** `.py`, `.js`, `.html`, `.css`, `.java`, `.c`, `.cpp`, `.h`
 -   **Executables:** `.exe`, `.dmg`, `.app`, `.deb`, `.rpm`
 -   **Others:** Any file with an unrecognized extension.
-
-## Customization
-
-You can easily customize the categories and their associated file extensions by modifying the `categories` dictionary within the `organize_files` function in `file_organizer.py`.

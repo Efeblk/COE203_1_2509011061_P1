@@ -8,10 +8,10 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from os_config import validate_paths
-from folder_utils import organize_files_in_destination
+from folder_utils import organize_files_in_destination, format_report
 
 class FileOrganizerApp(tk.Tk):
-    def __init__(self):
+    def __init__(self, dry_run_cli_state=False):
         super().__init__()
         self.title("File Organizer")
         self.geometry("650x250")
@@ -22,8 +22,13 @@ class FileOrganizerApp(tk.Tk):
         self.source_path = tk.StringVar()
         self.dest_path = tk.StringVar()
         self.same_place_var = tk.BooleanVar()
+        self.dry_run_var = tk.BooleanVar(value=dry_run_cli_state)
 
         self.create_widgets()
+
+        # If dry_run_cli_state is True, disable the checkbox
+        if dry_run_cli_state:
+            self.dry_run_checkbox.config(state="disabled")
 
     def create_widgets(self):
         # Source Directory
@@ -36,8 +41,10 @@ class FileOrganizerApp(tk.Tk):
         tk.Entry(self, textvariable=self.dest_path, width=50).grid(row=1, column=1, padx=10, pady=10, sticky="ew")
         tk.Button(self, text="Browse...", command=self.browse_dest).grid(row=1, column=2, padx=10, pady=10)
 
-        # Same Place Checkbox
+        # Checkboxes
         tk.Checkbutton(self, text="Organize in the same folder", variable=self.same_place_var, command=self.toggle_dest_entry).grid(row=2, column=1, padx=10, pady=10, sticky="w")
+        self.dry_run_checkbox = tk.Checkbutton(self, text="Dry-run (preview changes)", variable=self.dry_run_var)
+        self.dry_run_checkbox.grid(row=2, column=2, padx=10, pady=10, sticky="w")
 
         # Organize Button
         tk.Button(self, text="Organize Files", command=self.organize_files).grid(row=3, column=1, padx=10, pady=20)
@@ -70,6 +77,7 @@ class FileOrganizerApp(tk.Tk):
     def organize_files(self):
         source = self.source_path.get()
         dest = self.dest_path.get()
+        dry_run = self.dry_run_var.get()
 
         if not source:
             messagebox.showerror("Error", "Please select a source directory.")
@@ -87,10 +95,11 @@ class FileOrganizerApp(tk.Tk):
 
             same_place = source_path.resolve() == dest_path.resolve()
             
-            organize_files_in_destination(source_path, dest_path, same_place=same_place)
+            stats = organize_files_in_destination(source_path, dest_path, same_place=same_place, dry_run=dry_run)
 
             self.status_label.config(text="File organization complete!")
-            messagebox.showinfo("Success", "File organization complete!")
+            report = format_report(stats)
+            messagebox.showinfo("Organization Report", report)
 
         except (FileNotFoundError, NotADirectoryError) as e:
             self.status_label.config(text=f"Error: {e}", fg="red")
