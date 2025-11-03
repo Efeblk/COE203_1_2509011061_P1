@@ -8,13 +8,18 @@ def main():
     
     arguments = sys.argv[1:]
     
-    if len(arguments) < 2:
-        print("\nError: Please provide both a source and a destination directory.")
+    if len(arguments) == 2:
+        source_directory_str = arguments[0]
+        destination_directory_str = arguments[1]
+    elif len(arguments) == 1 and arguments[0] == ".":
+        print("Organizing files in the current directory.")
+        source_directory_str = "."
+        destination_directory_str = "."
+    else:
+        print("\nError: Please provide a valid set of arguments.")
         print(f"Usage: python {sys.argv[0]} <source_path> <destination_path>")
-        sys.exit(1) # Exit the script with an error code
-
-    source_directory_str = arguments[0]
-    destination_directory_str = arguments[1]
+        print(f"   or: python {sys.argv[0]} .")
+        sys.exit(1)
 
     # Convert to Path objects
     source_path = Path(source_directory_str)
@@ -24,7 +29,7 @@ def main():
     try:
         # 1. We "try" to run the function that might fail
         validate_paths(source_path, destination_path)
-        #create_category_folders(destination_path)
+        create_category_folders(destination_path)
 
         if source_path.resolve() == destination_path.resolve():
             print("\nSource and destination are the same. Organizing files in-place (moving).")
