@@ -4,7 +4,6 @@ from pathlib import Path
 import sys
 import os
 
-# Add src to path to allow importing other modules
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from os_config import validate_paths
@@ -16,7 +15,6 @@ class FileOrganizerApp(tk.Tk):
         self.title("File Organizer")
         self.geometry("650x250")
 
-        # Make the middle column expandable
         self.columnconfigure(1, weight=1)
 
         self.source_path = tk.StringVar()

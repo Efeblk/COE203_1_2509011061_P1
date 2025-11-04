@@ -3,21 +3,38 @@ from pathlib import Path
 import os
 import shutil
 
-def load_categories():
-    """Loads categories from config.json"""
-    # Assuming config.json is in the project root, which is one level above src
-    config_path = Path(__file__).parent.parent / "config.json"
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-    return config["categories"]
+def load_categories(config_path=None):
+    if config_path is None:
+        project_root = Path(__file__).parent.parent
+        config_path = project_root / "config.json"
+    else:
+        config_path = Path(config_path)
 
-CATEGORIES = load_categories()
+    if not config_path.is_file():
+        raise FileNotFoundError(f"Configuration file not found at: {config_path}")
 
-def organize_files_in_destination(source_dir, dest_dir, same_place=False, dry_run=False):
-    """
-    Lists files in the source directory and copies/moves them to the corresponding destination folder.
-    Returns a dictionary with statistics.
-    """
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+    except json.JSONDecodeError:
+        raise ValueError(f"Error decoding JSON from the configuration file: {config_path}")
+
+    if "categories" not in config:
+        raise ValueError("The 'categories' key is missing from the configuration file.")
+
+    categories = config["categories"]
+    if not isinstance(categories, dict):
+        raise ValueError("The 'categories' value must be a dictionary.")
+
+    for category, extensions in categories.items():
+        if not isinstance(extensions, list):
+            raise ValueError(f"The value for category '{category}' must be a list of extensions.")
+        if not all(isinstance(ext, str) for ext in extensions):
+            raise ValueError(f"All extensions for category '{category}' must be strings.")
+
+    return categories
+
+def organize_files_in_destination(source_dir, dest_dir, categories, same_place=False, dry_run=False):
     print("\n--- Organizing Files ---")
     source_path = Path(source_dir)
     dest_path = Path(dest_dir)
@@ -39,13 +56,12 @@ def organize_files_in_destination(source_dir, dest_dir, same_place=False, dry_ru
                 file_size = source_item.stat().st_size
                 stats["total_size"] += file_size
             except FileNotFoundError:
-                # File might have been moved already in same_place mode
                 continue
 
             file_extension = source_item.suffix.lower()
             
             target_category = "Others"
-            for category, extensions in CATEGORIES.items():
+            for category, extensions in categories.items():
                 if file_extension in extensions:
                     target_category = category
                     break
@@ -58,7 +74,7 @@ def organize_files_in_destination(source_dir, dest_dir, same_place=False, dry_ru
             
             if dry_run:
                 print(f"DRY-RUN: Would {'move' if same_place else 'copy'} '{source_item.name}' to '{dest_folder}'")
-                continue # Skip the actual file operation
+                continue
 
             dest_folder.mkdir(parents=True, exist_ok=True)
             
@@ -78,7 +94,6 @@ def organize_files_in_destination(source_dir, dest_dir, same_place=False, dry_ru
     return stats
 
 def format_report(stats):
-    """Formats the statistics into a string."""
     report = "\n--- Organization Report ---\n"
     report += f"Total files processed: {stats['total_files']}\n"
     

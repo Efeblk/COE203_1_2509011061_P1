@@ -1,59 +1,55 @@
 import sys
 from pathlib import Path
 from os_config import validate_paths
-from folder_utils import organize_files_in_destination, format_report
+from folder_utils import organize_files_in_destination, format_report, load_categories
+from gui import FileOrganizerApp
 
 def main_cli(args):
-    print(f"The name of the script is: {args[0]}")
-    
     dry_run = "--dry-run" in args
-    arguments = [arg for arg in args[1:] if arg != "--dry-run"]
+    arguments = []
+    for arg in args[1:]:
+        if arg not in ("--dry-run", "-ui"):
+            arguments.append(arg)
 
     if len(arguments) == 2:
-        source_directory_str = arguments[0]
-        destination_directory_str = arguments[1]
+        source_path = Path(arguments[0])
+        destination_path = Path(arguments[1])
     elif len(arguments) == 1 and arguments[0] == ".":
         print("Organizing files in the current directory.")
-        source_directory_str = "."
-        destination_directory_str = "."
+        source_path = Path(".")
+        destination_path = Path(".")
     else:
-        print("\nError: Please provide a valid set of arguments.")
-        print(f"Usage: python {args[0]} <source_path> <destination_path> [--dry-run]")
-        print(f"   or: python {args[0]} . [--dry-run]")
-        print(f"   or: python {args[0]} -ui [--dry-run]")
+        script_name = args[0]
+        print(f"\nUsage: python {script_name} <source_path> <destination_path> [--dry-run]")
+        print(f"   or: python {script_name} . [--dry-run]")
+        print(f"   or: python {script_name} -ui [--dry-run]")
         sys.exit(1)
 
-    # Convert to Path objects
-    source_path = Path(source_directory_str)
-    destination_path = Path(destination_directory_str)
-
-    # This is the "try...except" block
     try:
-        # 1. We "try" to run the function that might fail
+        categories = load_categories()
         validate_paths(source_path, destination_path)
 
-        stats = None
-        if source_path.resolve() == destination_path.resolve():
+        same_place = source_path.resolve() == destination_path.resolve()
+        if same_place:
             print("\nSource and destination are the same. Organizing files in-place (moving).")
-            stats = organize_files_in_destination(source_path, destination_path, same_place=True, dry_run=dry_run)
         else:
             print("\nSource and destination are different. Organizing files by copying.")
-            stats = organize_files_in_destination(source_path, destination_path, dry_run=dry_run)
+
+        stats = organize_files_in_destination(source_path, destination_path, categories, same_place=same_place, dry_run=dry_run)
         
         print(format_report(stats))
-        print("\n--- Success! All paths are valid. ---")
+        print("\n--- Success! ---")
         
-    except (FileNotFoundError, NotADirectoryError) as e:
-        # 2. If it "catches" one of the errors we raised,
-        #    it will print the error message and stop.
+    except (FileNotFoundError, NotADirectoryError, ValueError) as e:
         print(f"\n{e}")
-        sys.exit(1) # Exit the script with an error code
+        sys.exit(1)
 
 def main():
-    if "-ui" in sys.argv:
-        dry_run_cli = "--dry-run" in sys.argv
-        from gui import FileOrganizerApp
-        app = FileOrganizerApp(dry_run_cli_state=dry_run_cli)
+    use_ui = "-ui" in sys.argv
+    dry_run = "--dry-run" in sys.argv
+
+    if use_ui:
+        app = FileOrganizerApp(dry_run_cli_state=dry_run)
         app.mainloop()
     else:
         main_cli(sys.argv)
