@@ -60,7 +60,7 @@ def organize_files_in_destination(source_dir, dest_dir, categories, same_place=F
 
             file_extension = source_item.suffix.lower()
             
-            target_category = "Others"
+            target_category = "Others" #default
             for category, extensions in categories.items():
                 if file_extension in extensions:
                     target_category = category
