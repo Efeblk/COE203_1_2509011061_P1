@@ -7,7 +7,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from os_config import validate_paths
-from folder_utils import organize_files_in_destination, format_report
+from folder_utils import organize_files_in_destination, format_report, load_categories
 
 class FileOrganizerApp(tk.Tk):
     def __init__(self, dry_run_cli_state=False):
@@ -64,13 +64,16 @@ class FileOrganizerApp(tk.Tk):
             self.dest_path.set(path)
 
     def toggle_dest_entry(self):
+        dest_entry = self.children['!entry2']
+        dest_browse_button = self.children['!button2']
+
         if self.same_place_var.get():
             self.dest_path.set(self.source_path.get())
-            self.children['!entry2'].config(state="disabled")
-            self.children['!button2'].config(state="disabled")
+            dest_entry.config(state="disabled")
+            dest_browse_button.config(state="disabled")
         else:
-            self.children['!entry2'].config(state="normal")
-            self.children['!button3'].config(state="normal")
+            dest_entry.config(state="normal")
+            dest_browse_button.config(state="normal")
 
     def organize_files(self):
         source = self.source_path.get()
@@ -89,17 +92,18 @@ class FileOrganizerApp(tk.Tk):
         dest_path = Path(dest)
 
         try:
+            categories = load_categories()
             validate_paths(source_path, dest_path)
 
             same_place = source_path.resolve() == dest_path.resolve()
             
-            stats = organize_files_in_destination(source_path, dest_path, same_place=same_place, dry_run=dry_run)
+            stats = organize_files_in_destination(source_path, dest_path, categories, same_place=same_place, dry_run=dry_run)
 
             self.status_label.config(text="File organization complete!")
             report = format_report(stats)
             messagebox.showinfo("Organization Report", report)
 
-        except (FileNotFoundError, NotADirectoryError) as e:
+        except (FileNotFoundError, NotADirectoryError, ValueError) as e:
             self.status_label.config(text=f"Error: {e}", fg="red")
             messagebox.showerror("Error", str(e))
         except Exception as e:
