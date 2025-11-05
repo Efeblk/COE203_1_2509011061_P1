@@ -19,7 +19,7 @@ Run the program from the project's root directory.
     ```bash
     python3 src/main.py <source_path> <destination_path>
     ```
-    Example: `python3 src/main.py my_downloads organized_files`
+    Example: `python3 src/main.py test_source dest_destination`
 
 2.  **Organize files in the current directory (in-place):**
     ```bash
